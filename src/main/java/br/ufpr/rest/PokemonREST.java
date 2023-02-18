@@ -24,6 +24,7 @@ import br.ufpr.model.DeletedHistory;
 import br.ufpr.model.Habilidade;
 import br.ufpr.model.Pokemon;
 import br.ufpr.model.PokemonDTO;
+import br.ufpr.model.Tipo;
 import br.ufpr.repository.DeletedHistoryRepository;
 import br.ufpr.repository.PokemonRepository;
 import jakarta.persistence.EntityManager;
@@ -74,6 +75,19 @@ public class PokemonREST {
 					.body(lista.stream().map(e -> mapper.map(e, PokemonDTO.class)).collect(Collectors.toList()));
 		}
 	}
+	
+	@GetMapping("/pokemons/tipos/{tipo}")
+	public ResponseEntity<List<PokemonDTO>> buscarPorTipo(@PathVariable String tipo) {
+
+		List<Pokemon> lista = repo.findAllByTipo(tipo);
+
+		if (lista.isEmpty()) {
+			throw new CustomException(HttpStatus.NOT_FOUND, "Nenhum pokemon encontrado!");
+		} else {
+			return ResponseEntity.status(HttpStatus.OK)
+					.body(lista.stream().map(e -> mapper.map(e, PokemonDTO.class)).collect(Collectors.toList()));
+		}
+	}
 
 	@GetMapping("/pokemons/{id}")
 	public ResponseEntity<PokemonDTO> buscaPorId(@PathVariable Long id) {
@@ -96,7 +110,6 @@ public class PokemonREST {
 			throw new CustomException(HttpStatus.CONFLICT, "Pokemon já cadastrado!");
 		} else {
 			if(dh.isPresent()) {
-				pokemon.setId(dh.get().getId());
 				pokemon.setUsuario(dh.get().getUsuario());
 			}
 			
@@ -174,7 +187,6 @@ public class PokemonREST {
 				}else {
 					for(Habilidade hab: lista) {
 						if(hab.getNome().equalsIgnoreCase(h)) {
-							System.out.println(h);
 							int qtd = hab.getQuantidade();
 							hab.setQuantidade(qtd + 1);
 							found = true;
@@ -189,8 +201,53 @@ public class PokemonREST {
 		}
 		Collections.sort(lista);
 		Collections.reverse(lista);
+		List<Habilidade> topTres = new ArrayList<>();
+		int count = 0;
+		for(Habilidade h: lista) {
+			if(count < 3) {
+				topTres.add(h);
+			}
+			count++;
+		}
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(lista.stream().map(e -> mapper.map(e, Habilidade.class)).collect(Collectors.toList()));
+				.body(topTres.stream().map(e -> mapper.map(e, Habilidade.class)).collect(Collectors.toList()));
+	}
+	
+	@GetMapping("/pokemons/tipos/toptres")
+	public ResponseEntity<List<Tipo>> topTresTipos() {
+		List<Pokemon> pokemons = repo.findAll();
+		List<Tipo> lista = new ArrayList<>();
+		for (Pokemon p : pokemons){
+				boolean found = false;
+				if(lista.isEmpty()) {
+					lista.add(new Tipo(1, p.getTipo()));
+				}else{
+					for(Tipo tipo: lista) {
+						if(tipo.getNome().equalsIgnoreCase(p.getTipo())) {
+							int qtd = tipo.getQuantidade();
+							tipo.setQuantidade(qtd + 1);
+							found = true;
+							break;
+						}
+					}
+					if(!found) {
+						lista.add(new Tipo(1, p.getTipo()));
+					}
+				
+			}
+		}
+		Collections.sort(lista);
+		Collections.reverse(lista);
+		List<Tipo> topTres = new ArrayList<>();
+		int count = 0;
+		for(Tipo t: lista) {
+			if(count < 3) {
+				topTres.add(t);
+			}
+			count++;
+		}
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(topTres.stream().map(e -> mapper.map(e, Tipo.class)).collect(Collectors.toList()));
 	}
 
 }
