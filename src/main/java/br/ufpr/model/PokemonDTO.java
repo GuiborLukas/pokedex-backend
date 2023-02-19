@@ -8,14 +8,14 @@ public class PokemonDTO {
 	private String nome;
 	private String tipo;
 	private List<String> habilidade;
-	private byte[] foto;
+	private String foto;
 	private Long usuario;
 	
 	public PokemonDTO() {
 		super();
 	}
 
-	public PokemonDTO(Long id, String nome, String tipo, List<String> habilidade, byte[] foto, Long usuario) {
+	public PokemonDTO(Long id, String nome, String tipo, List<String> habilidade, String foto, Long usuario) {
 		super();
 		this.id = id;
 		this.nome = nome;
@@ -57,11 +57,11 @@ public class PokemonDTO {
 		this.habilidade = habilidade;
 	}
 
-	public byte[] getFoto() {
+	public String getFoto() {
 		return foto;
 	}
 
-	public void setFoto(byte[] foto) {
+	public void setFoto(String foto) {
 		this.foto = foto;
 	}
 

@@ -31,7 +31,7 @@ public class Pokemon {
 	
 	@Lob
     @Column(name = "arq_foto")
-	private byte[] foto;
+	private String foto;
 	
 	@Column(name = "usuario")
 	private Long usuario;
@@ -40,7 +40,7 @@ public class Pokemon {
 		super();
 	}
 
-	public Pokemon(Long id, String tipo, List<String> habilidade, byte[] foto, Long usuario) {
+	public Pokemon(Long id, String tipo, List<String> habilidade, String foto, Long usuario) {
 		super();
 		this.id = id;
 		this.tipo = tipo;
@@ -81,11 +81,11 @@ public class Pokemon {
 		this.habilidade = habilidade;
 	}
 
-	public byte[] getFoto() {
+	public String getFoto() {
 		return foto;
 	}
 
-	public void setFoto(byte[] foto) {
+	public void setFoto(String foto) {
 		this.foto = foto;
 	}
 

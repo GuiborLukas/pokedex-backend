@@ -204,7 +204,7 @@ public class PokemonREST {
 		for (Pokemon p : pokemons) {		
 			for (String h : p.getHabilidade()) {
 				boolean found = false;
-				if(h == null) {
+				if(h == null || h.equals("")) {
 					continue;
 				}
 				if(lista.isEmpty()) {
