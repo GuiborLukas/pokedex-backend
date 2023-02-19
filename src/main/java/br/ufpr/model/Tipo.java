@@ -1,6 +1,8 @@
 package br.ufpr.model;
 
-public class Tipo implements Comparable<Tipo>{
+import java.io.Serializable;
+
+public class Tipo implements Comparable<Tipo>, Serializable{
 
 	private int quantidade;
 	private String nome;

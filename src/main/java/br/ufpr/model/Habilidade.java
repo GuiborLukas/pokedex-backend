@@ -1,6 +1,8 @@
 package br.ufpr.model;
 
-public class Habilidade implements Comparable<Habilidade>{
+import java.io.Serializable;
+
+public class Habilidade implements Comparable<Habilidade>, Serializable{
 
 	private int quantidade;
 	private String nome;

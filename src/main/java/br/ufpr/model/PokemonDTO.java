@@ -15,9 +15,10 @@ public class PokemonDTO {
 		super();
 	}
 
-	public PokemonDTO(Long id, String tipo, List<String> habilidade, byte[] foto, Long usuario) {
+	public PokemonDTO(Long id, String nome, String tipo, List<String> habilidade, byte[] foto, Long usuario) {
 		super();
 		this.id = id;
+		this.nome = nome;
 		this.tipo = tipo;
 		this.habilidade = habilidade;
 		this.foto = foto;

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils; 
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +82,8 @@ public class PokemonREST {
 
 		List<Pokemon> lista = repo.findAllByTipo(tipo);
 
+		lista = filtrarPorTipo(lista, tipo);
+		
 		if (lista.isEmpty()) {
 			throw new CustomException(HttpStatus.NOT_FOUND, "Nenhum pokemon encontrado!");
 		} else {
@@ -111,6 +114,7 @@ public class PokemonREST {
 		} else {
 			if(dh.isPresent()) {
 				pokemon.setUsuario(dh.get().getUsuario());
+				dhRepo.delete(mapper.map(dh, DeletedHistory.class));
 			}
 			
 			try {
@@ -127,16 +131,23 @@ public class PokemonREST {
 	}
 
 	@PutMapping("/pokemons/{id}")
+	@Transactional
 	public ResponseEntity<PokemonDTO> alterarPokemon(@PathVariable("id") long id, @RequestBody Pokemon pokemon) {
 		Optional<Pokemon> poke = repo.findById(id);
 
 		if (poke.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		} else {
-			pokemon.setId(id);
-			repo.save(mapper.map(pokemon, Pokemon.class));
-			poke = repo.findById(id);
-			return ResponseEntity.status(HttpStatus.OK).body(mapper.map(poke, PokemonDTO.class));
+			try {
+			EntityManager entityManager = entityManagerFactory.createEntityManager();
+			entityManager.getTransaction().begin();
+			entityManager.persist(mapper.map(pokemon, Pokemon.class));
+			entityManager.getTransaction().commit();
+		} catch (Exception e) {
+			throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao inserir o Pokemon!");
+		}
+		poke = repo.findByNome(pokemon.getNome());
+		return ResponseEntity.status(HttpStatus.OK).body(mapper.map(poke, PokemonDTO.class));
 		}
 
 	}
@@ -162,7 +173,9 @@ public class PokemonREST {
 		List<Pokemon> newList = new ArrayList<>();
 		for (Pokemon p : pokemons) {
 			for (String h : p.getHabilidade()) {
-				if (habilidade.equalsIgnoreCase(h)) {
+				String hn = StringUtils.stripAccents(h);
+				String habilidaden = StringUtils.stripAccents(habilidade);
+				if (habilidaden.equalsIgnoreCase(hn) || hn.toLowerCase().contains(habilidaden.toLowerCase())) {
 					newList.add(p);
 					break;
 				}
@@ -172,6 +185,18 @@ public class PokemonREST {
 		return newList;
 	}
 
+	public static List<Pokemon> filtrarPorTipo(List<Pokemon> pokemons, String tipo) {
+		List<Pokemon> newList = new ArrayList<>();
+		for (Pokemon p : pokemons) {
+				String tn = StringUtils.stripAccents(p.getTipo());
+				String tipon = StringUtils.stripAccents(tipo);
+				if (tipo.equalsIgnoreCase(tn) || tn.toLowerCase().contains(tipon.toLowerCase())) {
+					newList.add(p);
+				}
+			}
+		return newList;
+	}
+	
 	@GetMapping("/pokemons/habilidades/toptres")
 	public ResponseEntity<List<Habilidade>> topTresHabilidades() {
 		List<Pokemon> pokemons = repo.findAll();

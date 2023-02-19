@@ -83,6 +83,7 @@ public class AuthREST {
 		if(user.isEmpty()) {
 			throw new CustomException(HttpStatus.NOT_FOUND, "Usuário não encontrado!");
 		}else {
+			user.get().setSenha(null);
 			return ResponseEntity.status(HttpStatus.OK).body(mapper.map(user, UsuarioDTO.class));
 		}
 	}
