@@ -80,7 +80,7 @@ public class PokemonREST {
 	@GetMapping("/pokemons/tipos/{tipo}")
 	public ResponseEntity<List<PokemonDTO>> buscarPorTipo(@PathVariable String tipo) {
 
-		List<Pokemon> lista = repo.findAllByTipo(tipo);
+		List<Pokemon> lista = repo.findAll();
 
 		lista = filtrarPorTipo(lista, tipo);
 		
@@ -134,17 +134,20 @@ public class PokemonREST {
 	@Transactional
 	public ResponseEntity<PokemonDTO> alterarPokemon(@PathVariable("id") long id, @RequestBody Pokemon pokemon) {
 		Optional<Pokemon> poke = repo.findById(id);
-
+		
+		
+		
 		if (poke.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		} else {
 			try {
 			EntityManager entityManager = entityManagerFactory.createEntityManager();
 			entityManager.getTransaction().begin();
-			entityManager.persist(mapper.map(pokemon, Pokemon.class));
+			entityManager.find(Pokemon.class, id);
+			entityManager.merge(pokemon);
 			entityManager.getTransaction().commit();
 		} catch (Exception e) {
-			throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao inserir o Pokemon!");
+			throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao alterar o Pokemon!");
 		}
 		poke = repo.findByNome(pokemon.getNome());
 		return ResponseEntity.status(HttpStatus.OK).body(mapper.map(poke, PokemonDTO.class));
